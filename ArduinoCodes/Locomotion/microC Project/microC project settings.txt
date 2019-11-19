@@ -1,0 +1,85 @@
+
+Important Note: Project settings must be set before uploading code to the PIC device.
+
+For open project settings : Project - > Project Settings
+
+Compiler : microC PRO for PIC v7.1.0
+
+PIC18F25K22 All Project Settings
+
+
+MCU AND OSCILLATOR SETTINGS
+
+MCU Name:
+	- P18F25K22
+MCU Clock Frequency
+	- 64 Mhz
+Build Type
+	- Release
+
+---------------------------------
+
+GENERAL PROJECT SETTINGS
+
+Oscillator
+	- HS oscillator(high power > 16 Mhz)
+4x PLL 
+	- Enabled
+Primary clock enable bit
+	- Disabled
+Fail safe clock monitor
+	- Disabled
+Internal/External Oscillator Switchover
+	- Disabled
+Power-up Timer
+	- Disabled
+Brown-out Reset
+	- Brown-out Reset enabled in hardware only (SBOREN is disabled)
+Brown-out Reset voltage
+	- VBOR set to 1.90 V nominal
+Watch-dog Timer Postscale
+	- 1:32768
+CCP2 MUX bit
+	- CCP2 input/output is multiplexed with RC1
+PortB A/D
+	- Enabled
+P3A/CCP3 Mux bit
+	- P3A/CCP3 input/output is multiplexed with RB5
+HFINT0SC Fast Start-up
+	- Enabled
+Timer3 Clock input mux
+	- TC3KI is on RC0
+ECCP2 B output mux
+	- P2B is on RB5
+MCLR Pin
+	- MCLR pin enabled, RE3 input pin disabled
+Stack Full/Underflow Reset
+	- Enabled
+Low Voltage Program 
+	- Disabled
+Extended Instruction Set
+	- Disabled
+Background Debug
+	- Disabled
+Code Protection Block 0
+	- Block 0 not code protected.
+Code Protection Block 1
+	- Block 1 not code protected.
+Code Protection Block 2
+	- Block 2 not code protected.
+Code Protection Block 3
+	- Block 3 not code protected.
+
+Rest of all settings are disabled
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	

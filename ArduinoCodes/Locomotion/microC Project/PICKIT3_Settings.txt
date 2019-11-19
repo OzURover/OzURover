@@ -1,0 +1,4 @@
+Device: PIC18F25K22
+
+Target Power: 
+	-On

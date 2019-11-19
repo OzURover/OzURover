@@ -1,0 +1,10 @@
+global_costmap:
+   global_frame: /map
+   robot_base_frame: /scanmatcher_frame
+   update_frequency: 1.0
+   publish_frequency: 0.5
+   static_map: false
+   transform_tolerance: 0.5
+   rolling_windows: true
+   width: 100
+   height: 200

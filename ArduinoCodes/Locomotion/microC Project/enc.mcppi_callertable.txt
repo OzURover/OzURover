@@ -1,0 +1,10 @@
+main
+	__CC2DW
+	UART1_Init
+	LongToStr
+		LongWordToStr
+			Div_32x32_U
+	UART1_Write_Text
+		UART1_Write
+	UART1_Write
+interrupt

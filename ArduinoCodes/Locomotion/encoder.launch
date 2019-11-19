@@ -1,0 +1,42 @@
+<launch>
+  <node
+    name = "right_middle_encoder"
+    pkg = "rosserial_python"
+    type = "serial_node.py"
+    output = "screen">
+          <param name = "port" value = "/dev/ttyUSB0"/>
+          <param name = "baud" value = "19200"/>
+  </node>
+  <node
+    name = "left_middle_encoder"
+    pkg = "rosserial_python"
+    type = "serial_node.py"
+    output = "screen">
+          <param name = "port" value = "/dev/ttyUSB0"/>
+          <param name = "baud" value = "19200"/>
+  </node>
+  <node
+    name = "right_back_encoder"
+    pkg = "rosserial_python"
+    type = "serial_node.py"
+    output = "screen">
+          <param name = "port" value = "/dev/ttyUSB0"/>
+          <param name = "baud" value = "19200"/>
+  </node>
+  <node
+    name = "left_back_encoder"
+    pkg = "rosserial_python"
+    type = "serial_node.py"
+    output = "screen">
+          <param name = "port" value = "/dev/ttyUSB0"/>
+          <param name = "baud" value = "19200"/>
+  </node>
+  <node
+    name = "point_to_point"
+    pkg = "rosserial_python"
+    type = "serial_node.py"
+    output = "screen">
+          <param name = "port" value = "/dev/ttyUSB0"/>
+          <param name = "baud" value = "19200"/>
+  </node>
+</launch>  
