@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+
+<robot name="theia2arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+        <link name="base_link">
+        <visual>
+                
+                <geometry>
+                        <box size="0.12 0.13 0.01" />
+                </geometry>
+        </visual>
+        </link>
+
+        <joint name="base_link__link_01" type="continuous">
+                <axis xyz="0 0 1" />
+                <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5" />
+                <origin rpy="0 0 0" xyz="0 0 0.005"/>
+                <parent link="base_link"/>
+                <child link="link_01"/>
+        </joint>
+
+        <link name="link_01">
+        <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.0135" />
+                <geometry>
+                        <cylinder radius="0.03" length="0.027" />
+                </geometry>
+        </visual>
+        </link>
+
+        <joint name="link_01__link_02" type="continuous">
+                <axis xyz="0 1 0" />
+                <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5" />
+                <origin rpy="0 0 0" xyz="0 0 0.027"/>
+                <parent link="link_01"/>
+                <child link="link_02"/>
+        </joint>
+
+        
+
+        <link name="link_02">
+        <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.2" />
+                <geometry>
+                        <box size="0.06 0.06 0.4" />
+                </geometry>
+        </visual>
+        </link>
+
+        <joint name="link_02__link_03" type="continuous">
+                <axis xyz="0 1 0" />
+                <limit effort="1" lower="-3.14" upper="3.14" velocity="0.5" />
+                <dynamics damping="0.0" friction="0.0"/>
+                <parent link="link_02"/>
+                <child link="link_03"/>
+                <origin xyz=" 0 0 0.4"/>
+        </joint>
+
+        <link name="link_03">
+        <visual>
+                <origin xyz="0 0 0.17" />
+                <geometry>
+                        <box size="0.05 0.05 0.34" />
+                </geometry>
+        </visual>
+        </link>
+
+        <joint name="link_03__endeffector_y" type="continuous">
+                <axis xyz="0 1 0" />
+                <limit effort="1" lower="-3.14" upper="3.14" velocity="0.5" />
+                <dynamics damping="0.0" friction="0.0"/>
+                <parent link="link_03"/>
+                <child link="endeffector_y"/>
+                <origin rpy="0 0 0" xyz=" 0 0 0.34"/>
+        </joint>
+
+        <link name="endeffector_y">
+        <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.0235" />
+                <geometry>
+                        <box size="0.046 0.148 0.047" />
+                </geometry>
+        </visual>
+        </link>
+
+        <joint name="endeffector_y__endeffector" type="continuous">
+                <axis xyz="0 0 1" />
+                <limit effort="1" lower="-3.14" upper="3.14" velocity="0.5" />
+                <parent link="endeffector_y"/>
+                <child link="endeffector"/>
+                <origin rpy="0 0 0" xyz=" 0 0 0.047"/>
+        </joint>
+
+        <link name="endeffector">
+        <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.056" />
+                <geometry>
+                        <box size="0.04 0.015 0.112" />
+                </geometry>
+        </visual>
+        </link>
+
+</robot>
+
+ 

@@ -1,0 +1,27 @@
+<launch>
+	<node pkg="rosserial_python" type="serial_node.py" name="gripper_claw" output="screen">
+	<param name="port" value="/dev/ttyUSB2" />
+	<param name="baud" value="9600" />
+	</node>
+
+	<node pkg="rosserial_python" type="serial_node.py" name="arm_joint1" output="screen">
+	<param name="port" value="/dev/ttyUSB4" />
+	<param name="baud" value="9600" />
+	</node>
+
+	<node pkg="rosserial_python" type="serial_node.py" name="arm_joint2" output="screen">
+	<param name="port" value="/dev/ttyUSB0" />
+	<param name="baud" value="9600" />
+	</node>
+
+	<node pkg="rosserial_python" type="serial_node.py" name="arm_joint0" output="screen">
+	<param name="port" value="/dev/ttyUSB3" />
+	<param name="baud" value="9600" />
+	</node>
+
+	<node pkg="rosserial_python" type="serial_node.py" name="locomotion" output="screen">
+	<param name="port" value="/dev/ttyUSB5" />
+	<param name="baud" value="76800" />
+	</node>
+
+</launch>

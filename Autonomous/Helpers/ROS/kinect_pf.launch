@@ -1,0 +1,38 @@
+<launch>
+    <arg name="multi_bno" default="true" />
+
+    <include file="$(find freenect_launch)/launch/freenect.launch" />
+    <include file="$(find orb_slam2_ros)/ros/launch/kinect.launch" />
+
+    <node name="mega" pkg="rosserial_python" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyACM0" />
+        <param name="baud" value="9600" />
+    </node>
+
+    <node name="right_middle_encoder" pkg="rosserial_python" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyUSB0" />
+        <param name="baud" value="9600" />
+    </node>
+    <node name="left_middle_encoder" pkg="rosserial_python" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyUSB1" />
+        <param name="baud" value="9600" />
+    </node>
+    <node name="right_back_encoder" pkg="rosserial_python" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyUSB2" />
+        <param name="baud" value="9600" />
+    </node>
+    <node name="left_back_encoder" pkg="rosserial_python" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyUSB3" />
+        <param name="baud" value="9600" />
+    </node>
+    <node name="bno" pkg="rosserial_python" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyUSB4" />
+        <param name="baud" value="9600" />
+    </node>
+    <node name="bno2" pkg="rosserial_python" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyUSB5" />
+        <param name="baud" value="9600" />
+    </node>
+
+    <node pkg="theia2" name="redunancy_controller.py" type="redunancy_controller.py" output="screen" args="$(arg multi_bno)" />
+</launch>

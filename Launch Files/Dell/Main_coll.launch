@@ -1,0 +1,33 @@
+<launch>
+
+	<node
+		name = "joy"
+		pkg = "joy"
+		type = "joy_node"
+		output = "screen">
+	</node>
+
+	<node 
+		name = "xboxs_publisher"
+		pkg = "theia2"
+		type = "xboxs_publisher.py"
+		output = "screen">
+	</node>
+
+	<node
+		name = "kinematics"
+		pkg = "theia2"
+		type = "kinematics.py"
+		output = "screen"
+		launch-prefix="gnome-terminal --command" >
+	</node>
+
+	<node
+		name = "dxl_control"
+		pkg = "theia2"
+		type = "dxl_control.py"
+		output = "screen"
+		launch-prefix="gnome-terminal --command" >
+	</node>	
+
+</launch>

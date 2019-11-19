@@ -1,0 +1,24 @@
+<launch>
+
+	<machine name="localhost" address="localhost" default="true" user="ozurover"/>
+	<machine name="theia1" address="10.42.0.205" default="true" user="theia1" ssh-port ="2222"/> 
+	
+	<node
+		name = "joy"
+		pkg = "joy"
+		type = "joy_node"
+		machine = "localhost"
+		output = "screen"
+		launch-prefix="gnome-terminal --command">
+	</node>
+	
+	<node 
+		name = "xboxs_publisher"
+		pkg = "theia2"
+		type = "xboxs_publisher.py"
+		machine = "localhost"
+		output = "screen"
+		launch-prefix="gnome-terminal --command">
+	</node>
+	
+</launch>

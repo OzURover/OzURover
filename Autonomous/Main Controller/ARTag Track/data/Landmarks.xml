@@ -1,0 +1,37 @@
+<landmarks>
+    <landmark>
+        <id>0</id>
+        <x>40</x>
+        <y>120</y>
+    </landmark>
+    <landmark>
+        <id>1</id>
+        <x>-120</x>
+        <y>120</y>
+    </landmark>
+    <landmark>
+        <id>2</id>
+        <x>-120</x>
+        <y>0</y>
+    </landmark>
+    <landmark>
+        <id>3</id>
+        <x>-180</x>
+        <y>-120</y>
+    </landmark>
+    <landmark>
+        <id>4</id>
+        <x>-120</x>
+        <y>120</y>
+    </landmark>
+    <landmark>
+        <id>5</id>
+        <x>-120</x>
+        <y>0</y>
+    </landmark>
+    <landmark>
+        <id>6</id>
+        <x>-180</x>
+        <y>-120</y>
+    </landmark>
+</landmarks>

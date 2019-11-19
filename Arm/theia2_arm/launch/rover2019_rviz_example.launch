@@ -1,0 +1,16 @@
+<launch>
+	<arg name="rviz.config" default="/home/ozurover/catkin_ws/src/theia2_arm/launch/config.rviz" />
+	<param name="use_gui" value="false" />	
+	<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find theia2_arm)/urdf/th2.xacro'" />
+
+
+	<node name="arm"  pkg="theia2_arm"  type ="arm.py" output="screen"/>
+	<node name="xbox_arm"  pkg="theia2_arm"  type ="xbox_arm.py" output="screen"/>
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz.config)" required="true" />
+
+  	<node name="joy" pkg="joy" type="joy_node"
+		output="screen" >
+  	</node>
+
+</launch>
