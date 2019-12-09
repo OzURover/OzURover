@@ -1,0 +1,17 @@
+Jetson CAN
+
+Wiring and Setup:
+https://devtalk.nvidia.com/default/topic/1025010/jetson-tx2/how-to-use-can-on-jetson-tx2-/
+
+Possible Error and Solution:
+https://devtalk.nvidia.com/default/topic/1027805/jetson-tx2/how-can-i-control-can-bus-on-tx2-/
+
+CAN Transceiver:
+https://www.sparkfun.com/datasheets/DevTools/Arduino/MCP2551.pdf
+
+Example Schematic:
+https://os.mbed.com/users/WiredHome/notebook/can---getting-started/
+
+Jetson CAN + Talon SRX Setup:
+https://phoenix-documentation.readthedocs.io/en/latest/ch06b_PrepLinuxRobot.html
+
