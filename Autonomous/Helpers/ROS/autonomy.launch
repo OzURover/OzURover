@@ -1,0 +1,140 @@
+<?xml version="1.0" ?>
+<!--
+Copyright (c) 2019, Deniz Uğur.
+
+All rights reserved.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<launch>
+
+    <!-- Choose visualization -->
+    <arg name="rtabmapviz" default="false" />
+    <arg name="rviz" default="true" />
+    <arg name="zed_namespace" default="zed" />
+    <arg name="zed_node_name" default="zed_node" />
+
+    <!-- Corresponding config files -->
+    <arg name="rtabmapviz_cfg" default="$(find rtabmap_ros)/launch/config/rgbd_gui.ini" />
+    <arg name="rviz_cfg" default="$(find rtabmap_ros)/launch/config/rgbd.rviz" />
+
+    <!-- RTAB-MAP Config -->
+    <arg name="localization" default="false" />
+    <arg name="visual_odometry" default="true" /> <!-- Generate visual odometry -->
+    <arg name="compressed" default="false" />
+
+    <!-- Launch Motor Control -->
+
+    <!-- ROS navigation stack move_base -->
+    <group ns="planner">
+        <remap from="openni_points" to="/obstacles_cloud" />
+        <remap from="map" to="/rtabmap/proj_map" />
+        <remap from="move_base_simple/goal" to="/planner_goal" />
+
+        <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+            <rosparam file="$(find ozuRover2020)/launch/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+            <rosparam file="$(find ozuRover2020)/launch/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+            <rosparam file="$(find ozuRover2020)/launch/config/local_costmap_params_3d.yaml" command="load" />
+            <rosparam file="$(find ozuRover2020)/launch/config/global_costmap_params.yaml" command="load" ns="global_costmap" />
+            <rosparam file="$(find ozuRover2020)/launch/config/base_local_planner_params.yaml" command="load" />
+        </node>
+    </group>
+
+    <group ns="zed">
+        <!-- ZED Wrapper Node-->
+        <include file="$(find zed_wrapper)/launch/zed_camera.launch">
+            <arg name="node_name" value="zed_node" />
+            <arg name="camera_model" value="zed" />
+            <arg name="publish_urdf" value="true" />
+        </include>
+    </group>
+
+    <!-- RTAB-map Node-->
+    <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+        <arg name="rtabmapviz" value="$(arg rtabmapviz)" />
+        <arg name="rviz" value="$(arg rviz)" />
+        <arg name="gui_cfg" value="$(arg rtabmapviz_cfg)" />
+        <arg name="rviz_cfg" value="$(arg rviz_cfg)" />
+
+        <arg name="frame_id" value="base_link" />
+        <arg name="map_frame_id" value="map" />
+        <arg name="namespace" value="rtabmap" />
+        <arg name="wait_for_transform" value="0.2" />
+        <arg name="rtabmap_args" value="--delete_db_on_start" />
+        <arg name="approx_sync" value="false" />
+
+        <arg name="rgb_topic" value="/$(arg zed_namespace)/$(arg zed_node_name)/rgb/image_rect_color" />
+        <arg name="depth_topic" value="/$(arg zed_namespace)/$(arg zed_node_name)/depth/depth_registered" />
+        <arg name="camera_info_topic" value="/$(arg zed_namespace)/$(arg zed_node_name)/rgb/camera_info" />
+        <arg name="depth_camera_info_topic" value="/$(arg zed_namespace)/$(arg zed_node_name)/depth/camera_info" />
+        <arg name="compressed" value="$(arg compressed)" />
+
+        <arg name="stereo" value="true" />
+        <arg name="visual_odometry" value="true" />
+        <arg name="localization" value="$(arg localization)" />
+
+        <arg name="imu_topic" value="/imu/data" /> <!-- only used with VIO approaches -->
+        <arg name="wait_imu_to_init" value="true" />
+        <arg name="gps_topic" value="/gps/fix" /> <!-- gps async subscription -->
+
+        <!-- Extra Parameters -->
+        <!--<param name="Odom/Strategy" type="string" value="0" />
+        <param name="Vis/EstimationType" type="string" value="1" />
+        <param name="Vis/MaxDepth" type="string" value="0" />
+        <param name="Odom/GuessMotion" type="string" value="true" />
+        <param name="Vis/MinInliers" type="string" value="10" />
+        <param name="OdomF2M/MaxSize" type="string" value="1000" />
+        <param name="GFTT/MinDistance" type="string" value="10" />
+        <param name="GFTT/QualityLevel" type="string" value="0.00001" />
+        <param name="GFTT/QualityLevel" type="string" value="0.00001" />-->
+    </include>
+
+    <!-- Throttling messages -->
+    <group ns="camera">
+        <node pkg="nodelet" type="nodelet" name="data_throttle" args="load rtabmap_ros/data_throttle camera_nodelet_manager">
+            <param name="rate" type="double" value="5" />
+            <param name="decimation" type="int" value="2" />
+
+            <remap from="rgb/image_in" to="/$(arg zed_namespace)/$(arg zed_node_name)/rgb/image_rect_color" />
+            <remap from="depth/image_in" to="/$(arg zed_namespace)/$(arg zed_node_name)/depth/depth_registered" />
+            <remap from="rgb/camera_info_in" to="/$(arg zed_namespace)/$(arg zed_node_name)/rgb/camera_info" />
+
+            <remap from="rgb/image_out" to="data_resized_image" />
+            <remap from="depth/image_out" to="data_resized_image_depth" />
+            <remap from="rgb/camera_info_out" to="data_resized_camera_info" />
+        </node>
+
+        <!-- for the planner -->
+        <node pkg="nodelet" type="nodelet" name="points_xyz_planner" args="load rtabmap_ros/point_cloud_xyz camera_nodelet_manager">
+            <remap from="depth/image" to="data_resized_image_depth" />
+            <remap from="depth/camera_info" to="data_resized_camera_info" />
+            <remap from="cloud" to="cloudXYZ" />
+            <param name="decimation" type="int" value="1" /> <!-- already decimated above -->
+            <param name="max_depth" type="double" value="4" />
+            <param name="voxel_size" type="double" value="0.02" />
+        </node>
+
+        <node pkg="nodelet" type="nodelet" name="obstacles_detection" args="load rtabmap_ros/obstacles_detection camera_nodelet_manager">
+            <remap from="cloud" to="cloudXYZ" />
+            <remap from="obstacles" to="/obstacles_cloud" />
+            <remap from="ground" to="/ground_cloud" />
+
+            <param name="frame_id" type="string" value="base_footprint" />
+            <param name="map_frame_id" type="string" value="map" />
+            <param name="wait_for_transform" type="bool" value="true" />
+            <param name="min_cluster_size" type="int" value="20" />
+            <param name="max_obstacles_height" type="double" value="0.0" />
+        </node>
+    </group>
+
+</launch>
