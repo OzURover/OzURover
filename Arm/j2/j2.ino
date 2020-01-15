@@ -1,154 +1,159 @@
-#include <Encoder.h>
-#include "EEPROMAnything.h"
+/* 
+  IMPORTANT! 
+  This code uses an external library DIO2, it needs to be downloaded from: 
+  http://www.codeproject.com/Articles/732646/Fast-digital-I-O-for-Arduino
+  If the library is not installed properly, the code will not compile and/or 
+  the readings coming from the encoder will not be correct.
+*/
 
-// Encoder A, B
-Encoder mEncoder(2, 4);
+#include <DIO2.h>
+#include <PID_v1.h>
+#include <ros.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <avr/wdt.h>
 
-// IN1, IN2, PWM
-const int in1 = 7;
-const int in2 = 6;
-const int pwm_pin = 5;
-const int BRK_LOW = 9;
-const int BRK_HIGH = 10;
+#define GPIO2_PREFER_SPEED 1
+#define c_EncoderPinA 2
+#define c_EncoderPinB 4
+#define EncoderIsReversed
 
-//Motor constants
-const float gear_ratio = 230.0;
-const float ppt = 500.0; // Pulses per Turn
-const float extra_constants = 3.0784 * 4; //Extra coefficents (Pulley * 4(?))
-const float Kp = 9.0;
-const float Kd = 0.01;
-const float f = 30.0; // 2.5-50 range
-const float Kdob = 0.0;
 
-//Program
-float refAngle = 0;
+#define gearRatio 230 
 
-//Other
-long oldPosition  = -999;
-long initMillis = 0;
-float premeaAngle = 0.0;
-float meaAngle = 0.0;
-float zaman = 0.0;
-//float prezaman = 0.0;
-float meaangVel = 0.0;
-float premeaangVel = 0.0;
-float preFmeaangVel = 0.0;
-float FmeaangVel = 0.0;
-float dt2 = 0.11;
-float a1 = 0;
-float fa1 = 0;
-float prefa1 = 0;
-float Tdis = 0;
+volatile bool _EncoderBSet;
+volatile long _EncoderTicks = 0;
+int direction1 = 1; // the direction that the motor is rotating to
+double angle1 = 1.5708; // angle of the motor wrt to the initial position
+
+//PID Library Setup
+//PID(&Input, &Output, &Setpoint, Kp, Ki, Kd, Direction)
+double PID_PWM; //Input that will be sent to the motor as PWM
+double GoalPosition = 1.5708; //The angle to be reached
+
+//Balcının PID: 6.65 0.723, 0.51
+PID armPID (&angle1, &PID_PWM, &GoalPosition,660.0,90.0,0.0, DIRECT); //angle1 is encoder reading
+
+ros::NodeHandle nh;
+
+std_msgs::Float32 angle_msg;
+std_msgs::Float32 u_outm;
+
+ros::Publisher curr_pos1("curr_pos_j2", &angle_msg);
+ros::Publisher u_out1("u_out_j2", &u_outm);
+
+void messageCb(const std_msgs::Float32& goal_pos3){
+  GoalPosition = goal_pos3.data;
+}
+
+void messageCb1(const std_msgs::Float32MultiArray& constants){
+  armPID.SetTunings(constants.data[0], constants.data[1], constants.data[2]);
+}
+   
+ros::Subscriber<std_msgs::Float32> sub("goal_pos3", &messageCb );
+ros::Subscriber<std_msgs::Float32MultiArray> sub1("constants", &messageCb1 );
 
 void setup() {
-  Serial.begin(115200);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(pwm_pin, OUTPUT);
-  pinMode(BRK_LOW, OUTPUT);
-  pinMode(BRK_HIGH, OUTPUT);
-
-  // Increase frequency of PWM
-  TCCR0B = (TCCR0B & 0b11111000) | 0x01;
-
-  //Restore Encoder Position
-  long pos = 0;
-  if (true)
-    EEPROM_readAnything(0, pos);
-  else  //Reset Encoder
-    EEPROM_writeAnything(0, pos);
-  mEncoder.write(pos);
-  //Serial.println(getDegree());
-
-  while (!Serial) {
-    /* Wait for USB connection */
-  }
-  initMillis = millis();
+  //Encoder Settings
+  pinMode(c_EncoderPinA, INPUT);      // sets pin A as input
+  digitalWrite(c_EncoderPinA, LOW);  // turn on pullup resistors
+  pinMode2(c_EncoderPinB, INPUT);      // sets pin B as input
+  digitalWrite(c_EncoderPinB, LOW);  // turn on pullup resistors
+  attachInterrupt(0, MotorInterruptA, RISING); //assignment of the interrupt pin
+  
+  //Motor settings
+  pinMode(6, OUTPUT); 
+  pinMode(7, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);
+  
+  halt(); //Halt the motor 
+   
+  //digitalWrite(13,HIGH);
+  //delay(2500);
+  //digitalWrite(13,LOW);
+  
+  //Enable PID
+  armPID.SetOutputLimits(-125,125);
+  armPID.SetMode(AUTOMATIC);
+  
+  nh.getHardware()->setBaud(76800);
+  nh.initNode();
+  nh.advertise(curr_pos1);
+  nh.advertise(u_out1);
+  nh.subscribe(sub);
+  nh.subscribe(sub1);
+  wdt_disable();
 }
 
 void loop() {
+/*
+  -----------------------------------------------
+  THE CONTROL LOOP
+  -----------------------------------------------
   
-  float dt = 0.0002;
-  float Jm = 136; //gcm^2
-  Jm = Jm / 10000000.0 * pow(gear_ratio, 2);
-  float baudr = 115200;
-  //prezaman = zaman;
+  By using the angle1, direction1, CW, CCW and halt a control loop will be implemented here. 
+  The loop needs to take a goal position for the motor through serial input. 
+*/
+  armPID.Compute();
   
-  premeaAngle = meaAngle;
-  zaman = getTime()/baudr;
-  meaAngle = getDegree();
-  premeaangVel = meaangVel;
-  meaangVel = (meaAngle - premeaAngle) / dt;
-  
-  float g20 = 2*PI*f;
-  float g20dt = g20*dt;
-  
-  float Fan = 0.2;
-  float Fam = 10;
-
-  //refAngle = -10;//Fam*sin(2*PI*Fan*zaman);
-  float refangVel = 1;//Fam*2*PI*Fan*cos(2*PI*Fan*zaman);
-  float Err = refAngle - meaAngle;
-  float dErr = refangVel - meaangVel;
-  
-  float motVol = Kp * Err + Kd * dErr - Kdob*Tdis;
-  
-  a1 = meaangVel*Jm*g20 + motVol;
-  prefa1 = fa1;
-  fa1 = g20dt*a1 + (1-g20dt)*prefa1;
-  Tdis = meaangVel*Jm*g20 -fa1; //if set, reduce Kp (espicially) and Kd
-
-  if (abs(Err) <= 0.2) {
-    Tdis=0;
-    fa1=0;
-    motVol=0;
-  } else {
-    Serial.print(refAngle);
-    Serial.print(" ");
-    Serial.println(meaAngle);
+  //CCW(PID_PWM);
+  if(abs(GoalPosition-angle1) <= 0.005){
+    PID_PWM=0;  
   }
   
-  setVolts(motVol);
+  if(PID_PWM > 0) CCW(abs(PID_PWM));
+  else if(PID_PWM < 0) CW(abs(PID_PWM));
+  else halt();
+  
+  u_outm.data = PID_PWM;
+  angle_msg.data = angle1;
+  curr_pos1.publish( &angle_msg );
+  u_out1.publish( &u_outm );
+  
+  
+  nh.spinOnce();
+  delay(5);
 }
 
-int setVolts(float volt) {
-  if (abs(volt) > 12.0) {
-    volt = volt > 0 ? 12 : -12;
-  }
-  if (volt == 0) {
-    digitalWrite(BRK_HIGH, LOW);
-    digitalWrite(BRK_LOW, HIGH);
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
-  } else {
-    digitalWrite(BRK_HIGH, HIGH);
-    digitalWrite(BRK_LOW, LOW);   
-  }
-  if (volt > 0) {
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
-  } else if (volt < 0) {
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
-  }
-  int pwm = int(255.0 * pow((abs(volt) / 12.0), 2));
-  analogWrite(pwm_pin, pwm);
-  return pwm;
+
+//This method reads the changes in the encoder and updates _EncoderTicks, direction1 and angle1 count
+void MotorInterruptA() {
+  _EncoderBSet = digitalRead2(c_EncoderPinB);   
+  if(digitalRead2(c_EncoderPinB) == HIGH) {
+    _EncoderTicks--;
+  } else if(digitalRead2(c_EncoderPinB) == LOW) {
+    _EncoderTicks++;
+  } 
+  // Coefficient -> [1/cpt]*3.14*3(kasnak)*[motor gear ratio]
+  //cpt: counts per turn 500 for HEDL 5540 A02
+  angle1 = 1.5708 + (1.0/(500.0*230.0*3.0))*6.28*_EncoderTicks;
 }
 
-long oldTime = 0;
-float getDegree() {
-  long newPosition = mEncoder.read();
-  if (newPosition != oldPosition) {
-    oldPosition = newPosition;
-    if (getTime() - oldTime > 1000) {
-      EEPROM_writeAnything(0, newPosition);
-      oldTime = getTime();
-    }
-    return newPosition * (360.0 / (gear_ratio * ppt * extra_constants));
-  }
+//This method sets the motor to turn in clockwise direction
+void CW(double PID_PWM){
+  digitalWrite(10, HIGH);
+  digitalWrite(9, LOW);
+  digitalWrite(6, HIGH);
+  digitalWrite(7, LOW);
+  analogWrite(5, PID_PWM);
 }
 
-long getTime() {
-  return millis() - initMillis;
+//This method sets the motor to turn in counter-clockwise direction
+void CCW(double PID_PWM){
+  digitalWrite(10, HIGH);
+  digitalWrite(9, LOW);
+  digitalWrite(6, LOW);
+  digitalWrite(7, HIGH);
+  analogWrite(5, PID_PWM);
+}
+
+//This method stops the motor
+void halt(){
+  digitalWrite(10, LOW);
+  digitalWrite(9, HIGH);  //ınverted signal
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
+  analogWrite(5, 0);
 }

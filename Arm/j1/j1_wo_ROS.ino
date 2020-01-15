@@ -8,51 +8,32 @@
 
 #include <DIO2.h>
 #include <PID_v1.h>
-#include <ros.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/Float32MultiArray.h>
 #include <avr/wdt.h>
+#include "EEPROMAnything.h"
 
 #define GPIO2_PREFER_SPEED 1
 #define c_EncoderPinA 2
 #define c_EncoderPinB 4
 #define EncoderIsReversed
 
-
 #define gearRatio 230 
 
 volatile bool _EncoderBSet;
 volatile long _EncoderTicks = 0;
-int direction1 = 1; // the direction that the motor is rotating to
+//int direction1 = 1; // the direction that the motor is rotating to
 double angle1 = 1.5708; // angle of the motor wrt to the initial position
 
 //PID Library Setup
 //PID(&Input, &Output, &Setpoint, Kp, Ki, Kd, Direction)
 double PID_PWM; //Input that will be sent to the motor as PWM
-double GoalPosition = 1.5708; //The angle to be reached
+double GoalPosition = (90 + 0.0) / (180 / PI); //The angle to be reached
+
+//Timer
+long oldTime = 0;
 
 //Balcının PID: 6.65 0.723, 0.51
 PID armPID (&angle1, &PID_PWM, &GoalPosition,660.0,90.0,0.0, DIRECT); //angle1 is encoder reading
-
-ros::NodeHandle nh;
-
-std_msgs::Float32 angle_msg;
-std_msgs::Float32 u_outm;
-
-ros::Publisher curr_pos1("curr_pos_j2", &angle_msg);
-ros::Publisher u_out1("u_out_j2", &u_outm);
-
-void messageCb(const std_msgs::Float32& goal_pos3){
-  GoalPosition = goal_pos3.data;
-}
-
-void messageCb1(const std_msgs::Float32MultiArray& constants){
-  armPID.SetTunings(constants.data[0], constants.data[1], constants.data[2]);
-}
    
-ros::Subscriber<std_msgs::Float32> sub("goal_pos3", &messageCb );
-ros::Subscriber<std_msgs::Float32MultiArray> sub1("constants", &messageCb1 );
-
 void setup() {
   //Encoder Settings
   pinMode(c_EncoderPinA, INPUT);      // sets pin A as input
@@ -77,14 +58,17 @@ void setup() {
   //Enable PID
   armPID.SetOutputLimits(-125,125);
   armPID.SetMode(AUTOMATIC);
+
+  Serial.begin(115200);
   
-  nh.getHardware()->setBaud(76800);
-  nh.initNode();
-  nh.advertise(curr_pos1);
-  nh.advertise(u_out1);
-  nh.subscribe(sub);
-  nh.subscribe(sub1);
   wdt_disable();
+
+  //Start timer and restore Encoder
+  EEPROM_readAnything(0, _EncoderTicks);
+  angle1 = 1.5708 + (1.0/(500.0*230.0*3.0))*6.28*_EncoderTicks;
+  //EEPROM_writeAnything(0, 0);
+  //EEPROM_readAnything(0, _EncoderTicks);
+  oldTime = millis();
 }
 
 void loop() {
@@ -102,18 +86,25 @@ void loop() {
   if(abs(GoalPosition-angle1) <= 0.005){
     PID_PWM=0;  
   }
-  
+  //PID_PWM = -125;
   if(PID_PWM > 0) CCW(abs(PID_PWM));
   else if(PID_PWM < 0) CW(abs(PID_PWM));
   else halt();
+
+  Serial.print(GoalPosition-angle1);
+  Serial.print(" ");
+  Serial.print(angle1);
+  Serial.print("===");
+  Serial.print(_EncoderTicks);
+  Serial.print(" ");
+  Serial.println(PID_PWM);
+
+  if (millis() - oldTime > 1000) {
+    EEPROM_writeAnything(0, _EncoderTicks);
+    oldTime = millis();
+  }
   
-  u_outm.data = PID_PWM;
-  angle_msg.data = angle1;
-  curr_pos1.publish( &angle_msg );
-  u_out1.publish( &u_outm );
   
-  
-  nh.spinOnce();
   delay(5);
 }
 
@@ -125,7 +116,7 @@ void MotorInterruptA() {
     _EncoderTicks--;
   } else if(digitalRead2(c_EncoderPinB) == LOW) {
     _EncoderTicks++;
-  } 
+  }
   // Coefficient -> [1/cpt]*3.14*3(kasnak)*[motor gear ratio]
   //cpt: counts per turn 500 for HEDL 5540 A02
   angle1 = 1.5708 + (1.0/(500.0*230.0*3.0))*6.28*_EncoderTicks;
