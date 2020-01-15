@@ -16,24 +16,25 @@
 #define c_EncoderPinB 4
 #define EncoderIsReversed
 
-#define gearRatio 230 
+
+#define gearRatio 156 
 
 volatile bool _EncoderBSet;
 volatile long _EncoderTicks = 0;
-//int direction1 = 1; // the direction that the motor is rotating to
+int direction1 = 1; // the direction that the motor is rotating to
 double angle1 = 1.5708; // angle of the motor wrt to the initial position
 
 //PID Library Setup
 //PID(&Input, &Output, &Setpoint, Kp, Ki, Kd, Direction)
 double PID_PWM; //Input that will be sent to the motor as PWM
-double GoalPosition = (90 + 0.0) / (180 / PI); //The angle to be reached
+double GoalPosition = (90.0 + 45.0) / (180/PI); //The angle to be reached
 
 //Timer
 long oldTime = 0;
 
-//Balcının PID: 6.65 0.723, 0.51
-PID armPID (&angle1, &PID_PWM, &GoalPosition,660.0,90.0,0.0, DIRECT); //angle1 is encoder reading
-   
+//6.65 0723 0.51
+PID armPID (&angle1, &PID_PWM, &GoalPosition,600.0,3,0.01, DIRECT); //angle1 is encoder reading
+
 void setup() {
   //Encoder Settings
   pinMode(c_EncoderPinA, INPUT);      // sets pin A as input
@@ -56,17 +57,16 @@ void setup() {
   //digitalWrite(13,LOW);
   
   //Enable PID
-  armPID.SetOutputLimits(-125,125);
+  armPID.SetOutputLimits(-255,255);
   armPID.SetMode(AUTOMATIC);
 
   Serial.begin(115200);
   
   wdt_disable();
-
+  
   //Start timer and restore Encoder
   EEPROM_readAnything(0, _EncoderTicks);
-  angle1 = 1.5708 + (1.0/(500.0*230.0*3.0))*6.28*_EncoderTicks;
-  //EEPROM_writeAnything(0, 0);
+  angle1 = 1.5708 + (1.0/(500.0*156.0*7.5))*20.043*_EncoderTicks;
   //EEPROM_readAnything(0, _EncoderTicks);
   oldTime = millis();
 }
@@ -80,30 +80,30 @@ void loop() {
   By using the angle1, direction1, CW, CCW and halt a control loop will be implemented here. 
   The loop needs to take a goal position for the motor through serial input. 
 */
+
   armPID.Compute();
   
   //CCW(PID_PWM);
-  if(abs(GoalPosition-angle1) <= 0.005){
-    PID_PWM=0;  
+  if(abs(GoalPosition-angle1) <= 0.01){
+    PID_PWM=0;
   }
-  //PID_PWM = -125;
-  if(PID_PWM > 0) CCW(abs(PID_PWM));
-  else if(PID_PWM < 0) CW(abs(PID_PWM));
+  //PID_PWM = 55;
+  if(PID_PWM > 0) CW(abs(PID_PWM));
+  else if(PID_PWM < 0) CCW(abs(PID_PWM));
   else halt();
 
-  Serial.print(GoalPosition-angle1);
+  Serial.print(GoalPosition * 180/PI);
   Serial.print(" ");
-  Serial.print(angle1);
-  Serial.print("===");
-  Serial.print(_EncoderTicks);
+  Serial.print(angle1 * 180/PI);
   Serial.print(" ");
   Serial.println(PID_PWM);
+  //Serial.print(" ");
+  //Serial.println(PID_PWM);
 
   if (millis() - oldTime > 1000) {
     EEPROM_writeAnything(0, _EncoderTicks);
     oldTime = millis();
   }
-  
   
   delay(5);
 }
@@ -113,13 +113,13 @@ void loop() {
 void MotorInterruptA() {
   _EncoderBSet = digitalRead2(c_EncoderPinB);   
   if(digitalRead2(c_EncoderPinB) == HIGH) {
-    _EncoderTicks--;
-  } else if(digitalRead2(c_EncoderPinB) == LOW) {
     _EncoderTicks++;
-  }
-  // Coefficient -> [1/cpt]*3.14*3(kasnak)*[motor gear ratio]
+  } else if(digitalRead2(c_EncoderPinB) == LOW) {
+    _EncoderTicks--;
+  } 
+  // Coefficient -> [1/cpt]*3.14*7.5(reduktor)*[motor gear ratio]
   //cpt: counts per turn 500 for HEDL 5540 A02
-  angle1 = 1.5708 + (1.0/(500.0*230.0*3.0))*6.28*_EncoderTicks;
+  angle1 = 1.5708 + (1.0/(500.0*156.0*7.5))*20.043*_EncoderTicks;
 }
 
 //This method sets the motor to turn in clockwise direction
@@ -142,7 +142,7 @@ void CCW(double PID_PWM){
 
 //This method stops the motor
 void halt(){
-  digitalWrite(10, LOW);
+  digitalWrite(10,LOW);
   digitalWrite(9, HIGH);  //ınverted signal
   digitalWrite(6, LOW);
   digitalWrite(7, LOW);
