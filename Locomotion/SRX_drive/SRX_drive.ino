@@ -25,12 +25,12 @@
 #define RL 46
 #define RH 20
 
-#define LOWB 0.0
-#define HIGHB 1.0
+#define LOWB 0
+#define HIGHB 1000
 
 double goal;
 
-void msgCb(const std_msgs::Flaot32& data) {
+void msgCb(const std_msgs::Float32& data) {
   goal = data.data;
 }
 
@@ -45,6 +45,7 @@ void setup()
 
   nh.getHardware()->setBaud(115200);
   nh.initNode();
+  nh.subscribe(sub);
 
 	// Wait for init and tell SRX's that we are sending PWM
 	delay(1500);
@@ -59,15 +60,15 @@ void loop()
 {
   if (goal < 10) {
     if (goal > 0) {
-      forward(goal);
+      forward(goal*1000);
     } else {
-      reverse(abs(goal));
+      reverse(abs(goal*1000));
     }
   } else {
     if (goal-20 < 0) {
-      right(abs(goal-20));
+      right(abs(goal-20)*1000);
     } else {
-      left(goal-20);
+      left((goal-20)*1000);
     }
   }
   nh.spinOnce();
