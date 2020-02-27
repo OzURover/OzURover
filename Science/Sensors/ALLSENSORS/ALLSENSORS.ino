@@ -5,7 +5,6 @@ Anemometer -
 BMP180 -
 UV Sensor +
 CO Sensor +
-Color Sensor -
 ADD COMMENTS
 */
 
