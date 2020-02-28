@@ -17,8 +17,8 @@ ADD COMMENTS
 #include <Wire.h>
 #include "Adafruit_VEML6070.h"
 
-#define DECAGON_DATA_PIN 2 //Moisture sensor's data pin
-#define ONE_WIRE_BUS 4 // Temperature sensor's data pin
+const int DECAGON_DATA_PIN = 2; //Moisture sensor's data pin
+const int ONE_WIRE_BUS = 4; // Temperature sensor's data pin
 
 ros::NodeHandle nh;
 
