@@ -1,37 +1,24 @@
 #include <ros.h>
 #include <std_msgs/Int32.h>
 
-const int D_ActuatorInA = x;
-const int D_ActuatorInB = x;
-const int D_ActuatorPWM = x;
+const int D_ActuatorInA = 8;
+const int D_ActuatorInB = 9;
+const int D_ActuatorPWM = 2;
 
-const int S_ActuatorInA = x;
-const int S_ActuatorInB = x;
-const int S_ActuatorPWM = x;
+const int S_ActuatorInA = 48;
+const int S_ActuatorInB = 49;
+const int S_ActuatorPWM = 5;
 
-const int DrillInA = x;
-const int DrillInB = x;
-const int DrillPWM = x;
+const int DrillInA = 12;
+const int DrillInB = 13;
+const int DrillPWM = 4;
 
-const int Water1InA = x;
-const int Water1InB = x;
-const int Water1PWM = x;
+const int WaterInA = 52;
+const int WaterInB = 53;
+const int WaterPWM = 7;
 
-const int Water2InA = x;
-const int Water2InB = x;
-const int Water2PWM = x;
-
-const int Water3InA = x;
-const int Water3InB = x;
-const int Water3PWM = x;
-
-const int Water4InA = x;
-const int Water4InB = x;
-const int Water4PWM = x;
-
-const int stepEnable = x;
-const int stepStep = x;
-const int stepDirection = x;
+const int stepStep = 47;
+const int stepDirection = 46;
 
 int Index;
 
@@ -59,7 +46,12 @@ void drill(const std_msgs::Int32 &msg, std_msgs::Int32) {
 }
 
 void water(const std_msgs::Int32 &msg, std_msgs::Int32) {
-    Water_Move( msg.data );   
+   if(msg.data== 1){  
+        Water_Move();
+}
+   else {
+        Water_Halt();
+   } 
 }
 
 void sensorActuator(const std_msgs::Int32 &msg, std_msgs::Int32) {
@@ -86,7 +78,6 @@ void stepper(const std_msgs::Int32 &msg, std_msgs::Int32) {
   }
 }
 
-
 ros::Subscriber<std_msgs::Int32> sub1("drillActuator", &drillActuator);
 ros::Subscriber<std_msgs::Int32> sub2("drill", &drill);
 ros::Subscriber<std_msgs::Int32> sub3("water", &water);
@@ -104,27 +95,16 @@ void setup()
     pinMode(DrillInA, OUTPUT);
     pinMode(DrillInB, OUTPUT);
     pinMode(DrillPWM, OUTPUT);
-    pinMode(Water1InA, OUTPUT);
-    pinMode(Water1InB, OUTPUT);
-    pinMode(Water1PWM, OUTPUT);
-    pinMode(Water2InA, OUTPUT);
-    pinMode(Water2InB, OUTPUT);
-    pinMode(Water2PWM, OUTPUT);
-    pinMode(Water3InA, OUTPUT);
-    pinMode(Water3InB, OUTPUT);
-    pinMode(Water3PWM, OUTPUT);
-    pinMode(Water4InA, OUTPUT);
-    pinMode(Water4InB, OUTPUT);
-    pinMode(Water4PWM, OUTPUT);
-    pinMode(stepEnable, OUTPUT);
+    pinMode(WaterInA, OUTPUT);
+    pinMode(WaterInB, OUTPUT);
+    pinMode(WaterPWM, OUTPUT);
     pinMode(stepStep, OUTPUT);
     pinMode(stepDirection, OUTPUT);
-
-    digitalWrite(stepEnable, LOW);
 
     D_Actuator_Halt();
     S_Actuator_Halt();
     Drill_Halt();
+    Water_Halt();
 
     nh.initNode();
     nh.subscribe(sub1);
@@ -132,6 +112,7 @@ void setup()
     nh.subscribe(sub3);
     nh.subscribe(sub4);
     nh.subscribe(sub5);
+    
 }
 
 void loop()
@@ -145,11 +126,15 @@ void D_Actuator_Halt() {
 }
 
 void S_Actuator_Halt() {
-    analogWrite(D_ActuatorPWM, 0);
+    analogWrite(S_ActuatorPWM, 0);
 }
 
 void Drill_Halt() {
-  analogWrite(DrillPWM, 0);
+    analogWrite(DrillPWM, 0);
+}
+
+void Water_Halt() {
+    analogWrite(WaterPWM, 0);
 }
 
 void D_Actuator_Up() {
@@ -182,40 +167,10 @@ void Drill_Move() {
   analogWrite(DrillPWM, 255);
 }
 
-void Water_Move(int motor) {
-  int InA;
-  int InB;
-  int PWM;
-
-  if (motor == 1) {
-    InA = Water1InA;
-    InB = Water1InB;
-    PWM = Water1PWM;
-  }
-
-  else if (motor == 2) {
-    InA = Water2InA;
-    InB = Water2InB;
-    PWM = Water2PWM;
-  }
-
-  else if (motor == 3) {
-    InA = Water3InA;
-    InB = Water3InB;
-    PWM = Water3PWM;
-  }
-
-  else {
-    InA = Water4InA;
-    InB = Water4InB;
-    PWM = Water4PWM;
-  }
-
-  digitalWrite(InA, HIGH);
-  digitalWrite(InB, LOW);
-  analogWrite(PWM, 255);
-  delay(5000);
-  analogWrite(PWM, 0);
+void Water_Move() {
+  digitalWrite(WaterInA, HIGH);
+  digitalWrite(WaterInB, LOW);
+  analogWrite(WaterPWM, 255);
 }
 
 void Step_Right() {
