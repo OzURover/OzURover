@@ -52,24 +52,9 @@ def joyCallback(data):
             message.data = 2
             pubStep.publish(message) #suffle
 
-        #water pump 1
+        #water pump
         elif data.buttons[3] == 1:
             message.data = 1
-            pubW.publish(message)
-        
-        #water pump 2
-        elif data.buttons[1] == 1:
-            message.data = 2
-            pubW.publish(message)
-        
-        #water pump 3
-        elif data.buttons[0] == 1:
-            message.data = 3
-            pubW.publish(message)
-
-        #water pump 4
-        elif data.buttons[2] == 1:
-            message.data = 4
             pubW.publish(message)
 
         else:
@@ -77,6 +62,7 @@ def joyCallback(data):
 
             pubDrillAct.publish(message)
             pubSensorAct.publish(message)
+            pubW.publish(message)
 
 
     else:
@@ -84,9 +70,10 @@ def joyCallback(data):
         
         pubDrillAct.publish(message)
         pubSensorAct.publish(message)
+        pubW.publish(message)
 
 def start():
-    global pubDrillAct, pubDrill, pubW1, pubW2, pubW3, pubW4, pubSensorAct, pubStep
+    global pubDrillAct, pubDrill, pubW, pubSensorAct, pubStep
     
     rospy.init_node("ScienceControl")
 
