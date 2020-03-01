@@ -20,13 +20,13 @@
 #define LEFT 7
 #define RIGHT 8
 
-#define FL 48
+#define FL 47
 #define FH 74
 #define RL 46
 #define RH 20
 
 #define LOWB 0
-#define HIGHB 1000
+#define HIGHB 10000
 
 double goal;
 
@@ -41,6 +41,7 @@ void setup()
 {
 	pinMode(LEFT, OUTPUT);
 	pinMode(RIGHT, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 	TCCR4B = TCCR4B & B11111000 | B00000100;
 
   nh.getHardware()->setBaud(115200);
@@ -54,21 +55,22 @@ void setup()
 	delay(500);
 	analogWrite(LEFT, 0);
 	analogWrite(RIGHT, 0);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop()
 {
   if (goal < 10) {
     if (goal > 0) {
-      forward(goal*1000);
+      forward(goal*10000);
     } else {
-      reverse(abs(goal*1000));
+      reverse(abs(goal*10000));
     }
   } else {
     if (goal-20 < 0) {
-      right(abs(goal-20)*1000);
+      right(abs(goal-20)*10000);
     } else {
-      left((goal-20)*1000);
+      left((goal-20)*10000);
     }
   }
   nh.spinOnce();
