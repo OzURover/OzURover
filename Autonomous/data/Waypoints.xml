@@ -1,0 +1,27 @@
+<waypoints>
+    <waypoint>
+        <id>0</id>
+        <x>0.0</x>
+        <y>100.0</y>
+    </waypoint>
+    <waypoint>
+        <id>1</id>
+        <x>-50.0</x>
+        <y>50.0</y>
+    </waypoint>
+    <waypoint>
+        <id>2</id>
+        <x>-50.0</x>
+        <y>-50.0</y>
+    </waypoint>
+    <waypoint>
+        <id>3</id>
+        <x>50.0</x>
+        <y>-50.0</y>
+    </waypoint>
+    <waypoint>
+        <id>4</id>
+        <x>50.0</x>
+        <y>-50.0</y>
+    </waypoint>
+</waypoints>
