@@ -13,7 +13,7 @@ def draw(s, e):
 
 	# Timer
 	start = timeit.default_timer()
-	r, nr = OP.create_route(s, e)
+	r, nr = OP.create_route(s, e, astar=True)
 	stop = timeit.default_timer()
 
 	delta = 1

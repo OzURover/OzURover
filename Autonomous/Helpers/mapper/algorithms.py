@@ -27,8 +27,7 @@ class SquareGrid:
                    (x-1, y+2), (x+1, y+2), (x+2, y+1), (x+2, y-1), (x+1, y-2), (x-1, y-2), (x-2, y-1), (x-2, y+1)]
         #results = [(x+1, y), (x, y-1), (x-1, y), (x, y+1)]
         if (x + y) % 2 == 0:
-            pass
-            # results.reverse()  # aesthetics
+            pass #results.reverse()  # aesthetics
         results = filter(self.in_bounds, results)
         results = filter(self.passable, results)
         return results
