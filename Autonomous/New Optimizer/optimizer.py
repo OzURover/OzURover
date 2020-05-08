@@ -1,7 +1,11 @@
 """
 Purpose of this file: Fast & Efficient algorithm to find optimum path for given target.
 
-Algorithm goal: Find a path with RRT but given +-5% of the height on the nearest position to target at a given iteration. Also exclude the data behind the dominant axis (perpendicular line to the travlled line for birds-eye view)
+7/05/2020: Algorithm goal: Find a path with RRT but given +-5% of the height on the nearest position to target at a given iteration. Also exclude the data behind the dominant axis (perpendicular line to the travlled line for birds-eye view)
+
+7/05/2020: Maybe... A modified version of RRT* could be used to skip reloading new height slice. That version could limit itself to use the slice it needs.
+
+8/05/2020: Or... A* with Fuel and Altitude change costmap
 
 Useful Links:
 Filter optimization: https://towardsdatascience.com/speeding-up-python-code-fast-filtering-and-slow-loops-8e11a09a9c2f
