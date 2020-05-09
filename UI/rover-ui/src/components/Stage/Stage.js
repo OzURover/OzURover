@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import styles from "./Stage.module.scss";
 
+import NavigationIcon from "@material-ui/icons/Navigation";
+import DriveEtaIcon from '@material-ui/icons/DriveEta';
+import InfoIcon from '@material-ui/icons/Info';
+
 import Paper from "@material-ui/core/Paper";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 
 import TabPanel from "../TabPanel/TabPanel";
-
-import NavigationIcon from "@material-ui/icons/Navigation";
-import DriveEtaIcon from '@material-ui/icons/DriveEta';
-import InfoIcon from '@material-ui/icons/Info';
+import Navigation from "../Panels/Navigation/Navigation";
 
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -50,15 +51,9 @@ export default function Stage() {
           <Tab label="Status" icon={<InfoIcon />} id={tabID(2)} />
         </Tabs>
       </AppBar>
-      <TabPanel value={active} index={0}>
-        Item One
-      </TabPanel>
-      <TabPanel value={active} index={1}>
-        Item Two
-      </TabPanel>
-      <TabPanel value={active} index={2}>
-        Item Three
-      </TabPanel>
+      <TabPanel value={active} index={0} component={<Navigation />} />
+      <TabPanel value={active} index={1} component={<Navigation />} />
+      <TabPanel value={active} index={2} component={<Navigation />} />
     </Paper>
   );
 }

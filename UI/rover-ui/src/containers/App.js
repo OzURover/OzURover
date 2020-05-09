@@ -13,7 +13,7 @@ import PublicIcon from "@material-ui/icons/Public";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 
-function App() {
+export default function App() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const theme = React.useMemo(
     () =>
@@ -69,5 +69,3 @@ function App() {
     </ThemeProvider>
   );
 }
-
-export default App;

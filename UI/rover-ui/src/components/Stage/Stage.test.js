@@ -1,9 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import App from './Stage';
+import Stage from './Stage';
 
-test('renders learn react link', () => {
-  const { getByText } = render(<Stage />);
-  const linkElement = getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('renders Stage without a problem', () => {
+  const { getAllByRole } = render(<Stage />);
+  const linkElement = getAllByRole("tab");
+  expect(linkElement).toHaveLength(3);
 });
