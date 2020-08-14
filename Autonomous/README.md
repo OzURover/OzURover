@@ -1,3 +1,3 @@
-## Initialize
+## Discontinued on this branch
 
-Remove or update this file after first commit
+see it on [this branch](https://github.com/DenizUgur/asd_driver)
