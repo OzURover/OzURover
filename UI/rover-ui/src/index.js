@@ -3,11 +3,27 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./containers/App";
 import * as serviceWorker from "./serviceWorker";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+
+// Reducer example
+const counter = (state = 0, action) => {
+  switch (action.type) {
+    case "INCREMENT":
+      return state + 1;
+    default:
+      return state;
+  }
+};
+
+const store = createStore(counter);
 
 ReactDOM.render(
-    <React.StrictMode>
+  <React.StrictMode>
+    <Provider store={store}>
       <App />
-    </React.StrictMode>,
+    </Provider>
+  </React.StrictMode>,
   document.getElementById("root")
 );
 

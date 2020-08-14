@@ -2,16 +2,18 @@ import React from "react";
 import styles from "./App.module.scss";
 import Stage from "../components/Stage/Stage";
 
-import Paper from "@material-ui/core/Paper";
-import Container from "@material-ui/core/Container";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
+import {
+  Paper,
+  Container,
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  useMediaQuery,
+  ThemeProvider,
+  createMuiTheme,
+} from "@material-ui/core";
 import PublicIcon from "@material-ui/icons/Public";
-
-import useMediaQuery from "@material-ui/core/useMediaQuery";
-import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 
 export default function App() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -55,7 +57,10 @@ export default function App() {
               <PublicIcon />
             </IconButton>
             <Typography variant="h6" color="inherit" style={{ flexGrow: 1 }}>
-              OzU Rover, <i><b>2020</b> UI Debut</i>
+              OzU Rover,{" "}
+              <i>
+                <b>2020</b> UI Debut
+              </i>
             </Typography>
           </Toolbar>
         </AppBar>

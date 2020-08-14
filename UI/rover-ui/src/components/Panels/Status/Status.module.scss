@@ -1,0 +1,14 @@
+.good {
+  min-height: 100%;
+  background-image: radial-gradient(circle at center, #60ff3f 0, transparent 100%);
+}
+
+.warn {
+  min-height: 100%;
+  background-image: radial-gradient(circle at center, #ffd000 0, transparent 100%);
+}
+
+.error {
+  min-height: 100%;
+  background-image: radial-gradient(circle at center, #fc1c03 0, transparent 100%);
+}

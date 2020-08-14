@@ -1,14 +1,6 @@
-import React from 'react'
-import Paper from "@material-ui/core/Paper";
+import React from "react";
+import { Paper } from "@material-ui/core";
 
 export default function Navigation() {
-    return (
-        <div>
-            <Paper variant="outlined">Hello</Paper>
-        </div>
-    )
+  return <Paper variant="outlined">Hello</Paper>;
 }
-
-/**
- * https://nivo.rocks/heatmap/
- */

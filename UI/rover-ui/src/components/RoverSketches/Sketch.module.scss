@@ -1,0 +1,12 @@
+.parent {
+    height: 65vh;
+}
+
+.container {
+    display: grid;
+    justify-items: center;
+
+    .element {
+        grid-area: 1 / 1;
+    }
+}
