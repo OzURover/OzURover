@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+config=yaml.load(open("./config.yaml"),Loader=yaml.FullLoader)
+
 
 from datetime import datetime
 import rospy
@@ -9,8 +11,9 @@ from cv_bridge import CvBridge, CvBridgeError
 import sys
 import numpy as np
 import time
+i=0
+j=0
 
-i=1
 bridge = CvBridge()
 
 def read_rgb_image(image_name, show):
@@ -38,6 +41,8 @@ def convert_gray_to_binary(gray_image, adaptive, show):
     return binary_image    
 
 def draw_contours(black_image,image, contours,color_of_contour,limit_area,text,thick):
+    global j
+    j+=1
     index = -1 #means all contours
     color = color_of_contour #color of the contour line
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -59,11 +64,22 @@ def draw_contours(black_image,image, contours,color_of_contour,limit_area,text,t
                 cv2.drawContours(image, [c], -1, color, thickness=thick)
                 cv2.drawContours(black_image, [c], -1, (150,250,150), thickness=thick)
                 cv2.putText(black_image,text,(cx-100,cy), font, 1,(255,255,255),2)
+
+
+            
+            
+
+                
+
             #cv2.circle(image, (cx,cy),(int)(2),(0,0,255),thickness=2)
             #cv2.circle(image, (cx,cy),(int)(2),(0,0,255),thickness=2)
             cv2.circle(black_image, (cx,cy),(int)(2),(0,0,255),thickness=1)
             #print ("Area: {}, Perimeter: {}".format(area, perimeter))
-
+    if(j>700):
+        cv2.imwrite("DIRECTORY/savedImage{}.jpg".format(datetime.now()),image)#CHECK DIRECTORY
+        cv2.imwrite("DIRECTORY/savedImage{}.jpg".format(datetime.now()),black_image)#CHECK DIRECTORY
+        print("proccesed images are saved!")
+        j=0
 def get_contour_center(contour):
     M = cv2.moments(contour)
     cx=-1
@@ -86,6 +102,8 @@ def getContours(binary_image):
 def filter_color(rgb_image, lower_bound_color, upper_bound_color):
     #convert the image into the HSV color space
     hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
+    #cv2.imshow("hsv image",hsv_image)
+    #cv2.imshow("RGB Image",rgb_image)
 
     #define a mask using the lower and upper bounds of the yellow color 
     mask = cv2.inRange(hsv_image, lower_bound_color, upper_bound_color)
@@ -131,6 +149,8 @@ def detectRed(image_frame,black_image):
 def detectOldRocks(image_frame,black_image):
     grayLower =(40, 10, 50)
     grayUpper = (81, 255, 139)
+    #yellowLower =(30, 10, 52)
+    #yellowUpper = (95, 255, 255)
     rgb_image = image_frame
     binary_image_mask = filter_color(rgb_image, grayLower, grayUpper)
     contours = getContours(binary_image_mask)
@@ -138,6 +158,8 @@ def detectOldRocks(image_frame,black_image):
 def detectRight(image_frame,black_image):
     grayLower =(0, 16, 110)
     grayUpper = (32, 51, 220)
+    #yellowLower =(30, 10, 52)
+    #yellowUpper = (95, 255, 255)
     rgb_image = image_frame
     binary_image_mask = filter_color(rgb_image, grayLower, grayUpper)
     contours = getContours(binary_image_mask)
@@ -148,20 +170,22 @@ def image_callback(ros_image):
   #print 'got an image'
   global i
   global bridge
+  i+=1
   #convert ros_image into an opencv-compatible image
   try:
     cv_image = bridge.imgmsg_to_cv2(ros_image, "bgr8")
   except CvBridgeError as e:
       print(e)
   #from now on, you can work exactly like with opencv---------
-  cv2.imshow("RGB Image",cv_image)
+  #cv2.imshow("RGB Image",cv_image)
   frame=cv_image
   black_image = np.zeros([frame.shape[0],frame.shape[1],3],'uint8')
   
-  if cv2.waitKey(1) == ord(' '):  #press space button in order to save
-   cv2.imwrite("directory/savedImage{}.jpg".format(datetime.now()),frame)  #TODO Don't forget to specify directory!
-   i+=1
-   print("image saved!")
+  if cv2.waitKey(1) == ord(' ') or i>=100:
+   cv2.imwrite("DIRECTORY/savedImage{}.jpg".format(datetime.now()),frame)# CHECK DIRECTORY
+   print("raw image is saved!")
+   i=0
+   
   
   
   detectIsland(frame,black_image)
@@ -177,13 +201,13 @@ def image_callback(ros_image):
   detectRight(frame,black_image)
 
   detectYellow(frame,black_image)
-  cv2.imshow("RGB Image Contours",frame)
-  cv2.imshow("Black Image Contours",black_image)
+  #cv2.imshow("RGB Image Contours",frame)
+  #cv2.imshow("Black Image Contours",black_image)
 
   
 def main(args):
   rospy.init_node('marsyard_image_proccessing', anonymous=True)
-  image_sub = rospy.Subscriber("camera_topic",Image, image_callback) #TODO Add Camera Topic
+  image_sub = rospy.Subscriber("/zed2/right_raw/image_raw_color",Image, image_callback) #Check topic
   try:
     rospy.spin()
   except KeyboardInterrupt:
