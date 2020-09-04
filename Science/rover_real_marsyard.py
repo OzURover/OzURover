@@ -59,13 +59,6 @@ def draw_contours(black_image,image, contours,color_of_contour,limit_area,text,t
                 cv2.drawContours(image, [c], -1, color, thickness=thick)
                 cv2.drawContours(black_image, [c], -1, (150,250,150), thickness=thick)
                 cv2.putText(black_image,text,(cx-100,cy), font, 1,(255,255,255),2)
-
-
-            
-            
-
-                
-
             #cv2.circle(image, (cx,cy),(int)(2),(0,0,255),thickness=2)
             #cv2.circle(image, (cx,cy),(int)(2),(0,0,255),thickness=2)
             cv2.circle(black_image, (cx,cy),(int)(2),(0,0,255),thickness=1)
@@ -93,8 +86,6 @@ def getContours(binary_image):
 def filter_color(rgb_image, lower_bound_color, upper_bound_color):
     #convert the image into the HSV color space
     hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
-    #cv2.imshow("hsv image",hsv_image)
-    #cv2.imshow("RGB Image",rgb_image)
 
     #define a mask using the lower and upper bounds of the yellow color 
     mask = cv2.inRange(hsv_image, lower_bound_color, upper_bound_color)
@@ -140,8 +131,6 @@ def detectRed(image_frame,black_image):
 def detectOldRocks(image_frame,black_image):
     grayLower =(40, 10, 50)
     grayUpper = (81, 255, 139)
-    #yellowLower =(30, 10, 52)
-    #yellowUpper = (95, 255, 255)
     rgb_image = image_frame
     binary_image_mask = filter_color(rgb_image, grayLower, grayUpper)
     contours = getContours(binary_image_mask)
@@ -149,8 +138,6 @@ def detectOldRocks(image_frame,black_image):
 def detectRight(image_frame,black_image):
     grayLower =(0, 16, 110)
     grayUpper = (32, 51, 220)
-    #yellowLower =(30, 10, 52)
-    #yellowUpper = (95, 255, 255)
     rgb_image = image_frame
     binary_image_mask = filter_color(rgb_image, grayLower, grayUpper)
     contours = getContours(binary_image_mask)
@@ -171,8 +158,8 @@ def image_callback(ros_image):
   frame=cv_image
   black_image = np.zeros([frame.shape[0],frame.shape[1],3],'uint8')
   
-  if cv2.waitKey(1) == ord(' '):
-   cv2.imwrite("/home/canyagmur/Desktop/marsyard_images/savedImage{}.jpg".format(datetime.now()),frame)
+  if cv2.waitKey(1) == ord(' '):  #press space button in order to save
+   cv2.imwrite("directory/savedImage{}.jpg".format(datetime.now()),frame)  #TODO Don't forget to specify directory!
    i+=1
    print("image saved!")
   
@@ -196,7 +183,7 @@ def image_callback(ros_image):
   
 def main(args):
   rospy.init_node('marsyard_image_proccessing', anonymous=True)
-  image_sub = rospy.Subscriber("/image_publisher_1599225158983148606/image_raw",Image, image_callback)
+  image_sub = rospy.Subscriber("camera_topic",Image, image_callback) #TODO Add Camera Topic
   try:
     rospy.spin()
   except KeyboardInterrupt:
