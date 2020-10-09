@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Load controller configuration -->
+  <rosparam command="load" file="$(find ozurover_description)/config/control.yaml" />
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner"
+    respawn="false" args="ozurover_velocity_controller ozurover_joint_publisher" output="screen" />
+
+  <!--node pkg="twist_mux" type="twist_mux" name="twist_mux" >
+    <rosparam command="load" file="$(find leo_control)/config/twist_mux.yaml" />
+    <remap from="cmd_vel_out" to="leo_velocity_controller/cmd_vel"/>
+  </node-->
+ 
+</launch>
