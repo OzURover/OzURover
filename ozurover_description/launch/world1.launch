@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="world_name" default="$(find ozurover_description)/worlds/world1.world"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world_name)"/> <!-- world_name is wrt GAZEBO_RESOURCE_PATH environment variable -->
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="true"/>
+    <arg name="verbose" value="true"/>
+  </include>
+
+  <include file="$(find ozurover_description)/launch/spawn.launch">
+    <!-- TODO: add possible arguments for depth camera, etc.-->
+  </include>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ozurover_description)/launch/config.rviz"/>
+  <!--
+  <include file="$(find ozurover_description)/launch/control.launch">
+  </include>
+  -->
+
+</launch>

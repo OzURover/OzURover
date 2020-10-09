@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding = "UTF-8" ?>
+
+<robot name="ozurover" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="$(find ozurover_description)/urdf/materials.xacro"/>
+    <xacro:include filename="$(find ozurover_description)/urdf/macros.xacro"/>
+    <xacro:include filename="$(find ozurover_description)/urdf/rover.gazebo"/>
+
+    <xacro:property name="x_length" value="1.0"/>
+    <xacro:property name="y_length" value="0.6"/>
+    <xacro:property name="z_length" value="0.2"/>
+    <!--
+    <link name="base_footprint">
+        <inertial>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <mass value="1.0"/>
+            <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+        </inertial>
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <box size="0.01 0.01 0.01"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.071"/>
+            <geometry>
+                <box size="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="base_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="base_footprint"/>
+        <child link="link_chassis" />
+    </joint>
+    -->
+    <link name="base_footprint"/>
+
+    <joint name="base_joint" type="fixed">
+        <origin xyz="0 0 -0.19783" rpy="0 0 0"/>
+        <parent link="base_footprint"/>
+        <child link="link_chassis" />
+    </joint>
+
+    <link name="link_chassis">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0.26"/>
+            <geometry>
+                <mesh filename="package://ozurover_description/models/Base_AllCATPart-binary.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <inertial>
+            <mass value="10"/>
+            <origin rpy="${pi/2} 0 0" xyz="-0.02 0.065 0.34"/>
+            <xacro:box_inertia w="0.68" d="0.5" h="0.18" m="10"/>
+        </inertial>
+        <collision>
+            <origin rpy="0 0 0" xyz="-0.02 0.065 0.34"/>
+            <geometry>
+                <box size="0.7 0.58 0.18"/>
+            </geometry>
+        </collision>
+    </link>
+    
+    
+    <xacro:link_and_joint_wheel_base name="L" origin_xyz="-0.4 -0.2 0"/>
+    <xacro:link_and_joint_wheel_base name="R" origin_xyz="-0.4 0.345 0"/>
+    
+    <xacro:wheel nameRL="R" name="FR" isLeft="-1" origin_xyz="0.05 -0.02 0.14" color="white"/>
+    <xacro:wheel nameRL="R" name="RR" isLeft="-1" origin_xyz="0.05 -0.76 0.14" color="white"/>
+    <xacro:wheel nameRL="L" name="FL" isLeft="1" origin_xyz="-0.075 -0.02 0.14" color="white"/>
+    <xacro:wheel nameRL="L" name="RL" isLeft="1" origin_xyz="-0.075 -0.76 0.14" color="white"/>
+
+    <link name="sensor_laser">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="1" />
+            <xacro:cylinder_inertia m="1" r="0.04" h="0.05" />
+        </inertial>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+            <cylinder radius="0.04" length="0.05"/>
+            </geometry>
+            <material name="red" />
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+            <cylinder radius="0.04" length="0.05"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="joint_sensor_laser" type="fixed">
+        <origin xyz="-0.28 0 0.46" rpy="0 0 ${pi}"/>
+        <parent link="link_chassis"/>
+        <child link="sensor_laser"/>
+    </joint>
+
+      <!-- Camera & IMU-->
+    <joint name="imu_joint" type="fixed">
+        <parent link="link_chassis"/>
+        <child link="imu_link"/>
+        <origin xyz="0.0 0 0.068" rpy="0 0 0"/>
+    </joint>
+    <link name="imu_link"/>
+
+    <xacro:property name="r200_cam_rgb_px" value="0.005"/>
+    <xacro:property name="r200_cam_rgb_py" value="0.018"/>
+    <xacro:property name="r200_cam_rgb_pz" value="0.013"/>
+    <xacro:property name="r200_cam_depth_offset" value="0.01"/>
+
+    <joint name="camera_joint" type="fixed">
+        <origin xyz="-0.3 0.1 0.5" rpy="2.18 0.0 -1.57"/>
+        <parent link="link_chassis"/>
+        <child link="camera_link"/>
+    </joint>
+
+    <link name="camera_link">
+        <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <cylinder length="0.08" radius="0.01"/>
+            <material name="blue">
+            <color rgba="0 1 0 1"/>
+            </material>
+        </geometry>
+        </visual>
+        <collision>
+        <origin xyz="0.003 0.065 0.007" rpy="0 0 0"/>
+        <geometry>
+            <box size="0.012 0.132 0.020"/>
+        </geometry>
+        </collision>
+    </link>
+
+    <joint name="camera_rgb_joint" type="fixed">
+        <origin xyz="${r200_cam_rgb_px} ${r200_cam_rgb_py} ${r200_cam_rgb_pz}" rpy="-1.57 -1.57 0"/>
+        <parent link="camera_link"/>
+        <child link="camera_rgb_frame"/>
+    </joint>
+    <link name="camera_rgb_frame"/>
+
+    <joint name="camera_rgb_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+        <parent link="camera_rgb_frame"/>
+        <child link="camera_rgb_optical_frame"/>
+    </joint>
+    <link name="camera_rgb_optical_frame"/>
+
+    <joint name="camera_depth_joint" type="fixed">
+        <origin xyz="${r200_cam_rgb_px} ${r200_cam_rgb_py + r200_cam_depth_offset} ${r200_cam_rgb_pz}" rpy="-1.57 -1.57 0"/>
+        <parent link="camera_link"/>
+        <child link="camera_depth_frame"/>
+    </joint>
+    <link name="camera_depth_frame"/>
+
+    <joint name="camera_depth_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="camera_depth_frame"/>
+        <child link="camera_depth_optical_frame"/>
+    </joint>
+    <link name="camera_depth_optical_frame"/>
+    
+
+    
+    <!--
+    <xacro:joint_wheel_base name="L" origin_xyz="-0.4 -0.2 -0.26"/>
+
+    <link name="link_wheel_base_L">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://ozurover_description/models/Legs_Wheels_AllCATPart.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <xacro:joint_wheel_base name="R" origin_xyz="-0.4 0.345 -0.26"/>
+
+    <link name="link_wheel_base_R">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://ozurover_description/models/Legs_Wheels_AllCATPart.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="joint3" type="continuous">
+         <origin rpy="0 ${pi/2} 0" xyz="0.05 -0.02 0.14"/>
+         <child link="wheel_FR"/>
+         <parent link="link_wheel_base_R"/>  
+         <axis xyz="0 0 -1"/>  
+    </joint>
+    <link name="wheel_FR">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://ozurover_description/models/Tyre Assembly_AllCATPart.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="joint4" type="continuous">
+         <origin rpy="0 ${-pi/2} 0" xyz="-0.075 -0.02 0.14"/>
+         <child link="wheel_FL"/>
+         <parent link="link_wheel_base_L"/>  
+         <axis xyz="0 0 1"/>  
+    </joint>
+    <link name="wheel_FL">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://ozurover_description/models/Tyre Assembly_AllCATPart.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+    </link>
+   
+    <joint name="joint5" type="continuous">
+         <origin rpy="0 ${-pi/2} 0" xyz="-0.075 -0.76 0.14"/>
+         <child link="wheel_RL"/>
+         <parent link="link_wheel_base_L"/>  
+         <axis xyz="0 0 1"/>  
+    </joint>
+    <link name="wheel_RL">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://ozurover_description/models/Tyre Assembly_AllCATPart.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="joint6" type="continuous">
+         <origin rpy="0 ${pi/2} 0" xyz="0.05 -0.76 0.14"/>
+         <child link="wheel_RR"/>
+         <parent link="link_wheel_base_R"/>  
+         <axis xyz="0 0 -1"/>  
+    </joint>
+    <link name="wheel_RR">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://ozurover_description/models/Tyre Assembly_AllCATPart.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+    </link>
+     -->
+
+
+    <!--
+    <link name="base_footprint">
+        <inertial>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <mass value="1.0"/>
+            <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+        </inertial>
+        <visual name="">
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <box size="0.01 0.01 0.01"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.071"/>
+            <geometry>
+                <box size="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="base_footprint_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0.051"/>
+        <child link="link_chassis"/>
+        <parent link="base_footprint"/>
+    </joint>
+    -->
+    <!--
+    <link name="base_footprint"/>
+
+    <joint name="footprint_joint" type="fixed">
+      <origin xyz="0 0 -0.19783" rpy="0 0 0"/>
+      <parent link="link_chassis"/>
+      <child link="base_footprint"/>
+    </joint>
+
+    <link name="link_chassis">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 ${z_length*2}"/>
+            <geometry>
+                <box size="${x_length} ${y_length} ${z_length}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <inertial>
+            <mass value="10"/>
+            <origin rpy="0 0 0" xyz="0 0 ${z_length*2}"/>
+            <xacro:box_inertia w="${x_length}" d="${y_length}" h="${z_length}" m="10"/>
+        </inertial>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 ${z_length*2}"/>
+            <geometry>
+                <box size="${x_length} ${y_length} ${z_length}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <xacro:link_wheel_base name="R"/>
+    <xacro:joint_wheel_base  name="R" isLeft="-1" isLeft01="0"/>
+
+    <xacro:link_wheel_base name="L"/>
+    <xacro:joint_wheel_base  name="L" isLeft="1" isLeft01="1"/>
+
+    <xacro:link_and_joint_wheel_stick parentName="R" childName="FR" isFront="1" isLeft="-1" isFront01="1" isBack01="0" isLeft01="0"/>
+    <xacro:link_and_joint_wheel_stick parentName="R" childName="BR" isFront="-1" isLeft="-1" isFront01="0" isBack01="1" isLeft01="0"/>
+    <xacro:link_and_joint_wheel_stick parentName="L" childName="FL" isFront="1" isLeft="1" isFront01="1" isBack01="0" isLeft01="1"/>
+    <xacro:link_and_joint_wheel_stick parentName="L" childName="BL" isFront="-1" isLeft="1" isFront01="0" isBack01="1" isLeft01="1"/>
+
+    <xacro:wheel name="FR" isFront="1" isLeft="-1" color="red" isLeft01="0"/>
+    <xacro:wheel name="BR" isFront="-1" isLeft="-1" color="orange" isLeft01="0"/>
+    <xacro:wheel name="FL" isFront="1" isLeft="1" color="black" isLeft01="1"/>
+    <xacro:wheel name="BL" isFront="-1" isLeft="1" color="orange" isLeft01="1"/>
+    -->
+    
+</robot>
