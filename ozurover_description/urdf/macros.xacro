@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding = "UTF-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+    <xacro:macro name="link_and_joint_wheel_base" params="name origin_xyz">
+        <link name="link_wheel_base_${name}">
+            <visual>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://ozurover_description/models/Legs_Wheels_AllCATPart-binary.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="white"/>
+            </visual>
+            <inertial>
+                <mass value="0.1"/>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <xacro:box_inertia w="0.1" d="0.1" h="0.1" m="0.1"/>
+            </inertial>
+            <!--TODO collision-->
+            <collision>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <geometry>
+                    <!--mesh filename="package://ozurover_description/models/Legs_Wheels_AllCATPart-binary.stl" scale="0.001 0.001 0.001"/-->
+                    <box size="0.01 0.01 0.01"/>
+                </geometry>
+            </collision> 
+        </link>
+        <joint name="joint_wheel_base_${name}" type="fixed">
+            <origin rpy="0 0 ${pi/2}" xyz="${origin_xyz}"/>
+            <child link="link_wheel_base_${name}"/>
+            <parent link="link_chassis"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="wheel" params="nameRL name isLeft origin_xyz color">
+        <link name="wheel_${name}">
+            <visual>
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://ozurover_description/models/Tyre Assembly_AllCATPart-binary.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="${color}"/>
+            </visual>
+            <inertial>
+                <mass value="5"/>
+                <origin rpy="0 0 0" xyz="0 0 ${0.05}"/>
+                <xacro:cylinder_inertia m="5" r="0.15" h="0.12"/>
+            </inertial>
+            <collision>
+                <origin rpy="0 0 0" xyz="0 0 0.05"/>
+                <geometry>
+                    <cylinder radius="0.15" length="0.12"/>
+                </geometry>
+            </collision>      
+        </link>
+        <joint name="joint_wheel_${name}" type="continuous">
+            <parent link="link_wheel_base_${nameRL}"/>
+            <child link="wheel_${name}"/>
+            <axis xyz="0 0 ${isLeft}"/> 
+            <origin rpy="${-isLeft*pi/2} 0 ${pi/2}" xyz="${origin_xyz}"/>
+            <limit effort="50" velocity="30"/> 
+            <dynamics friction="0.1" damping="0.1"/> 
+        </joint>
+        <!--
+        <transmission name="wheel_${name}_trans" type="SimpleTransmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="wheel_${name}_motor">
+            <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+            <joint name="joint_wheel_${name}">
+            <hardwareInterface>EffortJointInterface</hardwareInterface>
+            </joint>
+        </transmission>
+        -->
+    </xacro:macro>
+
+
+
+    <xacro:macro name="cylinder_inertia" params="m r h" >
+        <inertia ixx="${1/12*m*(3*r*r+h*h)}" ixy="0.0" ixz="0.0" iyy="${1/12*m*(3*r*r+h*h)}" iyz="0.0" izz="${1/2*m*r*r}"/>
+    </xacro:macro>
+
+
+    <xacro:macro name="box_inertia" params="w d h m" >
+        <inertia ixx="${1/12*m*(h*h+d*d)}" ixy="0.0" ixz="0.0" iyy="${1/12*m*(w*w+d*d)}" iyz="0.0" izz="${1/12*m*(h*h+w*w)}"/>
+    </xacro:macro>
+
+</robot>
