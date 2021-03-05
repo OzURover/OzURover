@@ -1,0 +1,25 @@
+<launch>
+
+    <arg name="rgb_image_topic" value="/zed2/left/image_rect_color" />
+    <arg name="rgb_camera_info_topic" value="/zed2/left/camera_info" />
+
+    <!-- Connect map to base_link -->
+    <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map odom 100" />
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+        <rosparam command="load" file="ekf_params.yaml" />
+        <remap from="odometry/filtered" to="/odometry/filtered" />
+    </node>
+
+    <group>
+        <arg name="marker_size" default="14.6" />
+        <arg name="max_new_marker_error" default="0.08" />
+        <arg name="max_track_error" default="0.2" />
+
+        <arg name="cam_image_topic" default="$(arg rgb_image_topic)" />
+        <arg name="cam_info_topic" default="$(arg rgb_camera_info_topic)" />
+        <arg name="output_frame" default="map" />
+
+        <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)" />
+    </group>
+
+</launch>

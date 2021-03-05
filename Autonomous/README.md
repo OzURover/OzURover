@@ -1,3 +1,3 @@
-## Discontinued on this branch
+## Autonomous Codes
 
-see it on [this branch](https://github.com/DenizUgur/asd_driver)
+Gate approach codes are present in this directory.

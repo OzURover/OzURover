@@ -1,0 +1,9 @@
+local_size: 4.0
+resolution: 0.05
+xy_tolerance: 0.6
+cmd_vel: "/cmd_vel"
+odometry_topic: "/odometry/filtered"
+ar_topic: "/ar_pose_marker"
+initial_position:
+  x: 0.0
+  y: 0.0
