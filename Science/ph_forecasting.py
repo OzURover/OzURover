@@ -9,13 +9,21 @@ from rospy.exceptions import ROSException
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from datetime import datetime
-from pynput import keyboard
+from pynput.keyboard import Listener  #will be listening keyboard
 
-
-
+#This code will take 1 argument , while launching: python ph_forecasting.py -show ==> Recommended for observing what's going on
+# If you do not give any arg. , then it doesn't show any GUI. ==> Recommended for Competetion time
 intialTracbarVals = [153,498,160,670]
 
+p_Pressed = False
+def keyPressed(key):
+    global p_Pressed
+    if(key.char == ('p') ):
+        p_Pressed = True
+        print("p_Pressed convertod ==> True ")
 
+listener = Listener(on_press=keyPressed)
+listener.start()
 
 
 def graph(formula, x_range,percent_of_Red):
@@ -88,14 +96,20 @@ def image_processor(Image):
     # Using cv2.putText() method
     image = cv2.putText(img_cv2, 'Predicted pH: '+str(predicted_pH), org, font, 
                       fontScale, color, thickness, cv2.LINE_AA)
+    img_drawn = drawPoints(image,valTrackbars())
     if(len(sys.argv) > 1 and sys.argv[1] in ['-show']):
-      img_drawn = drawPoints(image,valTrackbars())
+      
       cv2.imshow("Image",img_drawn)
       cv2.waitKey(1)
-      cv2.imwrite("./savedImage{}.jpg".format(datetime.now()),img_drawn)    #Need to be checked if location is fine ? 
-    else:
-      rospy.loginfo("Predicted pH: "+ str(predicted_pH ))
       
+    else:
+      global p_Pressed
+      rospy.loginfo("Predicted pH: "+ str(predicted_pH ))
+      if (p_Pressed):
+        cv2.imwrite("./savedImage{}.jpg".format(datetime.now()),img_drawn)    #Need to be checked if location is fine ? 
+        print("pH Forecasted image saved SUCCESSFULLY!")
+        p_Pressed = False
+
 
 
 
