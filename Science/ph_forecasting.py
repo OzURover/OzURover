@@ -3,10 +3,19 @@ import sys
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+from numpy.lib.type_check import imag
 import rospy
 from rospy.exceptions import ROSException
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from datetime import datetime
+from pynput import keyboard
+
+
+
+intialTracbarVals = [153,498,160,670]
+
+
 
 
 def graph(formula, x_range,percent_of_Red):
@@ -42,7 +51,7 @@ def image_processor(Image):
     channels = cv2.mean(img_wrapped)
     # Swap blue and red values (making it RGB, not BGR)
     observation = np.array([(channels[2], channels[1], channels[0])])
-    print(observation)
+    #print(observation)
 
     mean_of_Red   = channels[2]
     mean_of_Green = channels[1]
@@ -50,15 +59,15 @@ def image_processor(Image):
 
     # red percent will be used for forecasting pH
     percent_of_Red = mean_of_Red * 100 /(mean_of_Red+mean_of_Blue+mean_of_Green)
-    print(str(percent_of_Red)+" %")
+   # print(str(percent_of_Red)+" %")
 
     # equation taken from : http://przyrbwn.icm.edu.pl/APP/PDF/132/app132z3-IIp086.pdf & https://core.ac.uk/download/pdf/158352623.pdf
 
     # y = 0.0956 * x + 4.2722 ==> y: pH and x: Red Values (%)
 
     #graph('0.0956*x+4.2722', range(0, 100),percent_of_Red)
-
-    rospy.loginfo("Predicted pH: "+ str(0.0956 * percent_of_Red + 4.2722 ))
+    predicted_pH = 0.0956 * percent_of_Red + 4.2722
+    
    
     # Text Settings:
         # font
@@ -77,25 +86,16 @@ def image_processor(Image):
     thickness = 2
       
     # Using cv2.putText() method
-    image = cv2.putText(img_cv2, 'Predicted pH: '+str(0.0956 * percent_of_Red + 4.2722), org, font, 
+    image = cv2.putText(img_cv2, 'Predicted pH: '+str(predicted_pH), org, font, 
                       fontScale, color, thickness, cv2.LINE_AA)
-    
-    img_cv2 = drawPoints(img_cv2,valTrackbars())
-    cv2.imshow("Image",img_cv2)
-    cv2.waitKey(1)
-    
-		
+    if(len(sys.argv) > 1 and sys.argv[1] in ['-show']):
+      img_drawn = drawPoints(image,valTrackbars())
+      cv2.imshow("Image",img_drawn)
+      cv2.waitKey(1)
+      cv2.imwrite("./savedImage{}.jpg".format(datetime.now()),img_drawn)    #Need to be checked if location is fine ? 
+    else:
+      rospy.loginfo("Predicted pH: "+ str(predicted_pH ))
       
-
-def main():
-  rospy.init_node('marsyard_pH_forecasting', anonymous=True)
-  rospy.loginfo("marsyard_pH_forecasting node initiliazed !")
-  image_sub = rospy.Subscriber("/zed2/right/image_rect_color",Image, image_processor)
-  try:
-    rospy.spin()
-  except:
-    print("Shutting down")
-  cv2.destroyAllWindows()
 
 
 
@@ -115,7 +115,7 @@ def warpImg(img, points, w, h, inv=False):
 
 def nothing():
   pass
-
+  
 
 def initializeTrackbars(intialTracbarVals, wT=1000, hT=800):
     cv2.namedWindow("Trackbars")
@@ -127,13 +127,29 @@ def initializeTrackbars(intialTracbarVals, wT=1000, hT=800):
 
 
 def valTrackbars(wT=1000, hT=600):
-    widthTop = cv2.getTrackbarPos("Width Top", "Trackbars")
-    heightTop = cv2.getTrackbarPos("Height Top", "Trackbars")
-    widthBottom = cv2.getTrackbarPos("Width Bottom", "Trackbars")
-    heightBottom = cv2.getTrackbarPos("Height Bottom", "Trackbars")
-    points = np.float32([(widthTop, heightTop), (wT - widthTop, heightTop),
-                         (widthBottom, heightBottom), (wT - widthBottom, heightBottom)])
-    return points
+
+  if len(sys.argv) == 1:
+    
+    widthTop = intialTracbarVals[0]
+    heightTop = intialTracbarVals[1]
+    widthBottom = intialTracbarVals[2]
+    heightBottom = intialTracbarVals[3]
+  
+  
+  elif(sys.argv[1] in ['-show']):
+     widthTop = cv2.getTrackbarPos("Width Top", "Trackbars")
+     heightTop = cv2.getTrackbarPos("Height Top", "Trackbars")
+     widthBottom = cv2.getTrackbarPos("Width Bottom", "Trackbars")
+     heightBottom = cv2.getTrackbarPos("Height Bottom", "Trackbars")
+     
+  
+  points = np.float32([(widthTop, heightTop), (wT - widthTop, heightTop),
+                    (widthBottom, heightBottom), (wT - widthBottom, heightBottom)])
+  return points
+
+
+         
+    
 
 
 def drawPoints(img, points):
@@ -141,7 +157,27 @@ def drawPoints(img, points):
         cv2.circle(img, (int(points[x][0]), int(points[x][1])), 15, (0, 0, 255), cv2.FILLED)
     return img
 
-if __name__ == "__main__":
-  initializeTrackbars([153,498,160,670])
 
+
+def main():
+  rospy.init_node('marsyard_pH_forecasting', anonymous=True)
+  rospy.loginfo("marsyard_pH_forecasting node initiliazed !")
+  image_sub = rospy.Subscriber("/zed2/right/image_rect_color",Image, image_processor)
+  try:
+    rospy.spin()
+  except:
+    print("Shutting down")
+  cv2.destroyAllWindows()
+
+
+
+
+
+if __name__ == "__main__":
+
+  if len(sys.argv) ==1:
+    pass
+  elif(sys.argv[1] in ['-show']):
+    initializeTrackbars(intialTracbarVals)
+  
   main()
